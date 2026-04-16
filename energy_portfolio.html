@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energy Portfolio</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f5;
+    color: #1a1a1a;
+    padding: 16px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .north-star {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+  }
+  .north-star .label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #888;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .north-star .text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #e8e8e8;
+    font-style: italic;
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    padding: 14px 16px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .card-goal {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-left: 16px;
+  }
+  .actions { padding-left: 16px; }
+  .action {
+    font-size: 12px;
+    color: #333;
+    padding: 3px 0;
+    line-height: 1.5;
+    display: flex;
+    gap: 6px;
+  }
+  .action::before {
+    content: "›";
+    color: #bbb;
+    flex-shrink: 0;
+  }
+  .question {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .note {
+    font-size: 11px;
+    color: #888;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: #fafafa;
+    border-radius: 6px;
+    border-left: 2px solid #e0e0e0;
+  }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #bbb;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #111; color: #eee; }
+    .north-star { background: #222; }
+    .card { background: #1c1c1c; border-color: #2a2a2a; }
+    .card-title { color: #eee; }
+    .card-goal { color: #666; border-bottom-color: #2a2a2a; }
+    .action { color: #ccc; }
+    .question { color: #555; border-top-color: #2a2a2a; }
+    .note { background: #222; border-left-color: #333; color: #666; }
+    footer { color: #444; border-top-color: #222; }
+  }
+</style>
+</head>
+<body>
+
+<div class="north-star">
+  <div class="label">North Star — Character Compass</div>
+  <div class="text" id="north-star-text"></div>
+</div>
+
+<div class="section-label">Daily & Weekly Reminders</div>
+<div class="grid" id="cards"></div>
+
+<footer id="footer"></footer>
+
+<script>
+// ─────────────────────────────────────────────
+//  EDIT THIS SECTION TO UPDATE YOUR CONTENT
+// ─────────────────────────────────────────────
+
+var NORTH_STAR = "At the end of my life, I want to be remembered as a man of integrity, diligence, patience, sincerity, family-oriented, others-centered, knowledge-thirsty, fun-loving, and self-driven.";
+
+var AREAS = [
+  {
+    emoji: "❤️",
+    title: "Health & Fitness",
+    color: "#E24B4A",
+    goal: "Strong & healthy body · Maintain consistent exercise",
+    actions: [
+      "20-min exercise (Mon/Wed/Fri/Sat: strength · Tue/Thu/Sun: cardio)",
+      "Eat healthy — whole food, nuts, enough protein & fiber"
+    ],
+    question: "Am I sleeping, moving, eating in ways that give me energy?"
+  },
+  {
+    emoji: "🧠",
+    title: "Mind & Learning",
+    color: "#378ADD",
+    goal: "Expand English vocabulary · Confident English speaking",
+    actions: [
+      "Listen to NPR / WWDTM radio",
+      "Pronunciation training — record & listen back weekly",
+      "Email learning / magazine reading"
+    ],
+    question: "Am I learning? Reading, reflecting, building skills that compound."
+  },
+  {
+    emoji: "💰",
+    title: "Money",
+    color: "#639922",
+    goal: "Achieve financial independence (FIRE)",
+    actions: [
+      "Monthly financial review",
+      "Monthly investment & saving",
+      "Automate a fixed % of salary into investment on payday",
+      "Side hustle — GEPT / proctoring exams"
+    ],
+    question: "Am I building assets that work for me?"
+  },
+  {
+    emoji: "👥",
+    title: "Relationships",
+    color: "#D4537E",
+    goal: "Loving and loved · Build deeper, intentional relationships",
+    actions: [
+      "Ask my family how their day went",
+      "Family dinner / family trip",
+      "Send one encouraging message to a friend weekly",
+      "Quarterly relationship audit — who have I neglected?"
+    ],
+    question: "Am I investing in the people I care about?"
+  },
+  {
+    emoji: "🎨",
+    title: "Fun & Recreation",
+    color: "#EF9F27",
+    goal: "Relaxed and poised",
+    actions: [
+      "Schedule one fun block per week — non-negotiable",
+      "Watch one movie or series guilt-free weekly",
+      "Try one new restaurant or activity per month",
+      "Create a bucket list · check off one item per quarter"
+    ],
+    question: "Am I making time for things that genuinely delight me?"
+  },
+  {
+    emoji: "🌿",
+    title: "Environment",
+    color: "#1D9E75",
+    goal: "Create a home & workspace that energizes",
+    actions: [
+      "No phone in bedroom after 9pm",
+      "Declutter desk every Friday before leaving",
+      "Curate social media — unfollow what drains monthly"
+    ],
+    question: "Does my environment support who I want to become?"
+  },
+  {
+    emoji: "🙏",
+    title: "Purpose & Mission",
+    color: "#7F77DD",
+    goal: "Inspiring & influential to others",
+    actions: [
+      "Love yourself and love others — be a channel of blessing",
+      "Encourage one student intentionally each week",
+      "Write one thing you did this week that impacted someone",
+      "One act of service monthly outside your comfort zone"
+    ],
+    question: "Am I living in alignment with what matters most?"
+  },
+  {
+    emoji: "💡",
+    title: "Personal Growth",
+    color: "#BA7517",
+    goal: "Build keystone habits · 1% better each week",
+    actions: [
+      "Read 10 pages of a non-fiction book daily",
+      "Review goals every Sunday for 10 minutes",
+      "Write a weekly reflection — what did I learn?",
+      "Do one thing outside your comfort zone monthly"
+    ],
+    question: "Am I 1% better than last week?"
+  },
+  {
+    emoji: "⏰",
+    title: "Time / Lifestyle Design",
+    color: "#185FA5",
+    goal: "Own my calendar — work with full output",
+    actions: [
+      "Write to-do list & identify top 3 priorities first thing",
+      "Use AI to free up more time for autonomy",
+      "Weekly energy audit — what drained / energized me?",
+      "Batch similar tasks to reduce context switching"
+    ],
+    question: "Do I control my calendar? Am I saying no to protect what matters?"
+  },
+  {
+    emoji: "✝️",
+    title: "Spiritual Growth",
+    color: "#5F5E5A",
+    goal: "Spiritually rich · Daily devotional rhythm",
+    actions: [
+      "Read ODB when doing the dishes",
+      "Pray and reflect in the morning",
+      "Gratitude prayer at night"
+    ],
+    question: "Is my soul fed, not just my schedule filled?",
+    note: "Because He lives, I can face tomorrow."
+  },
+  {
+    emoji: "💼",
+    title: "Career",
+    color: "#993C1D",
+    goal: "Effective teaching · guiding · counseling",
+    actions: [
+      "AI content creation / teaching",
+      "Be a good homeroom teacher and counselor",
+      "Be a professional, growing teacher"
+    ],
+    question: "Does my work reflect my values and make use of my strengths?"
+  }
+];
+
+var FOOTER = "Energy Portfolio · Updated " + new Date().toLocaleDateString("en-GB", {year:"numeric", month:"long"});
+
+// ─────────────────────────────────────────────
+//  RENDER (no need to edit below)
+// ─────────────────────────────────────────────
+
+document.getElementById("north-star-text").textContent = "\u201c" + NORTH_STAR + "\u201d";
+document.getElementById("footer").textContent = FOOTER;
+
+var grid = document.getElementById("cards");
+AREAS.forEach(function(a) {
+  var card = document.createElement("div");
+  card.className = "card";
+
+  var header = '<div class="card-header">'
+    + '<div class="dot" style="background:' + a.color + '"></div>'
+    + '<span class="card-title">' + a.emoji + ' ' + a.title + '</span>'
+    + '</div>';
+
+  var goal = '<div class="card-goal">' + a.goal + '</div>';
+
+  var actions = '<div class="actions">'
+    + a.actions.map(function(act) {
+        return '<div class="action">' + act + '</div>';
+      }).join("")
+    + '</div>';
+
+  var question = '<div class="question">' + a.question + '</div>';
+
+  var note = a.note
+    ? '<div class="note">' + a.note + '</div>'
+    : '';
+
+  card.innerHTML = header + goal + actions + question + note;
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
